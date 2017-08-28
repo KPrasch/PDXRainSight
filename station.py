@@ -117,7 +117,14 @@ class RainStation(object):
             result = parser.fetch_today(r)
         return result
 
-    def dumpdata(self):
+    def to_string(self):
         r = requests.get(self.url)
-        data_str = r.text
-        return data_str
+        dataset = r.text
+        return dataset
+
+    # def to_dict(self):
+    #     dataset = self.__dict__
+    #     return dataset
+    #
+    # def to_json(self):
+    #     pass
