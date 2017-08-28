@@ -1,25 +1,7 @@
 from datetime import datetime
 from typing import Tuple
 
-from station import RainHour, RainDay
-
-
-def parse_row(row: str):
-    data = tuple(row.split())
-    date = datetime.strptime(data[0], '%d-%b-%Y')
-    rainfall = list()
-    for n in data[2:]:
-        try:
-            datum = int(n)
-        except ValueError as err:
-            if n == '-':
-                datum = 0
-            else:
-                raise err
-        rainfall.append(datum)
-
-    rainday = RainDay(date=date, total=int(data[1]), data=tuple(rainfall))
-    return rainday
+from parsers.text import parse_row
 
 
 def parse_daterange(request) -> tuple:
@@ -30,7 +12,6 @@ def parse_daterange(request) -> tuple:
         pass
     first_rainday = parse_row(item.decode())
     return first_rainday.date, last_rainday.date
-
 
 
 def remove_header(request):

@@ -2,7 +2,18 @@
 A tool for scraping live rain data from USGS and serving the data over a Websocket.
 
 
-### Implementation details
+## Usage
+
+### REST API
+
+To run the api locally:
+```
+$ apistar run
+Running at http://localhost:8080/
+$ open http://localhost:8080/docs/
+```
+
+## Implementation details
 
 #### RainStation.describe()
 ```

@@ -5,9 +5,10 @@ import threading
 import requests
 from bs4 import BeautifulSoup, SoupStrainer
 
+from parsers.exceptions import RainParserError
 from station import RainStation
 
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("collector")
 
 url = str
@@ -18,11 +19,15 @@ BASE_URL = 'https://or.water.usgs.gov/precip/'
 def spawn_station(url: str, stations):
     'worker thread'
     r = requests.get(url)
-    rs = RainStation.from_http_request(r)
-    stations.append(rs)
+    try:
+        rs = RainStation.from_http_request(r)
+    except RainParserError:
+        pass #TODO
+    else:
+        stations.append(rs)
 
 
-def fetch_links(quantity=10):
+def fetch_links(quantity=3):
     'Generates a list of station datasheet urls.'
     logger.info(f'Fetching {quantity} urls from {BASE_URL}')
     r = requests.get(BASE_URL)

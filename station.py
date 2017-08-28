@@ -1,14 +1,16 @@
-from datetime import datetime
 from collections import namedtuple
+from datetime import datetime
 
-import requests
 import geopy
+import requests
+
+from parsers.exceptions import RainParserError
 
 RainDay = namedtuple('RainDay', ['date', 'total', 'data'])
 RainHour = namedtuple('RainHour', ['hour', 'rain'])
 GeoCoords = namedtuple('GeoCoords', ['lat', 'lng'])
 
-import parser
+import parsers.http as parser
 
 
 class RainStation(object):
@@ -41,7 +43,10 @@ class RainStation(object):
     def from_http_request(cls, request):
         'Creates a new RainStation from a scraped request object'
         first_line = next(request.iter_lines()).decode()
-        name, location = list(map(str.strip, first_line.split('-')))
+        try:
+            name, location = list(map(str.strip, first_line.split('-')))
+        except ValueError:
+            raise RainParserError(f'Invalid location string: {first_line}')
         instance = cls(name=name, location=location, url=request.url)
         return instance
 
@@ -79,6 +84,7 @@ class RainStation(object):
     def refresh(self):
         r = requests.get(self.url, stream=True)
         today = parser.fetch_today(r)
+
         if today == self.today:
             return False
 
@@ -100,14 +106,13 @@ class RainStation(object):
         --------------------------------
         Total: {self.daily_total} 100/In.
         Current: {self.now} 100/In.
-        Today: {self.today}
         Last RainDay: {self.last_rain}
         Record Day: {self.max_rainday}
         Last Update: {self.last_fetch.ctime()}
         --------------------------------
         '''
         print(message)
-        return
+        return message
 
     def daterange(self, start_date=None, end_date=None):
         r = requests.get(self.url)

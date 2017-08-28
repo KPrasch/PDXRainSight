@@ -1,10 +1,11 @@
 import logging
 import threading
 import time
+from datetime import datetime
 
 from populate import spool_stations, BASE_URL
 
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("RainCollector")
 
 url = str
@@ -12,12 +13,15 @@ url = str
 
 class RainCollector(object):
     def __init__(self, interval=(60*60), retry=120):
+        self.created = datetime.now()
         self.interval = interval
         self.retry = retry
 
         self.stations = spool_stations()
+        # self.aborted = list()
 
         self.daemon = threading.Thread(target=self._start, daemon=True)
+        self.running = False
         self.workers = list()
 
     def __repr__(self):
@@ -54,6 +58,7 @@ class RainCollector(object):
     def _start(self):
         """Data collection daemon"""
         logger.info(f'Starting rain data collector on {self.interval}s interval.')
+        self.running = True
         time.sleep(3)
 
         while True:
@@ -83,8 +88,27 @@ class RainCollector(object):
         else:
             return False
 
+    def describe(self, verbose=False):
+        message = f'''
+        ### PDX Rain Collector ###
+        Tracking {len(self)} rain stations
+        Created: {self.created}
+        Daemon is {"running" if self.running else "idle"}
+        Current Workers: {len(self.workers)}
+        '''
+        print(message)
+        return message
 
-if __name__ == '__main__':
-    raincollector = RainCollector()
-    raincollector()
-    import pdb;pdb.set_trace()
+    def current_mean_rainfall(self):
+        total = sum(rs.now for rs in self.stations)
+        average = total / len(total)
+        print(average)
+        return average
+
+    def search(self, query: str):
+        query = query.lower()
+        result = [rs for rs in self.stations
+                      if query in rs.name.lower()
+                      or query in rs.location.lower()]
+        return result
+
