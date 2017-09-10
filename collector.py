@@ -2,6 +2,7 @@ import logging
 import threading
 import time
 from datetime import datetime
+import shelve
 
 from populate import spool_stations, BASE_URL
 
@@ -12,7 +13,11 @@ url = str
 
 
 class RainCollector(object):
-    def __init__(self, interval=(60*60), retry=120):
+    SHELF_DIR = '.'
+    def __init__(self, interval=(60*60), retry=120, shelf=True):
+        if shelf:
+            self.db = shelve.open('rain')
+
         self.created = datetime.now()
         self.interval = interval
         self.retry = retry

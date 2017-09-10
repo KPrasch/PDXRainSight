@@ -8,9 +8,12 @@ from collector import RainCollector
 
 raincollector = RainCollector()
 
+BASE_URL = '../pages/index.html'
+
 
 def welcome():
-    return {'message': 'Welcome to the PDXRainSight powered by API Star'}
+    with open(BASE_URL, 'r') as f:
+        return f.read()
 
 
 def start_daemon():
@@ -26,17 +29,20 @@ def station_status(query: str):
     stations = raincollector.search(query)
     if stations:
         data = [{f'{rs.name}': rs.describe()} for rs in stations]
-    else:
-        data = []
     return {'results': data}
 
+
+def list_stations():
+    stations = [s.to_dict() for s in raincollector.stations]
+    return {'results': stations}
 
 
 routes = [
     Route('/', 'GET', welcome),
-    Route('/raincollector/start', 'GET', start_daemon),
-    Route('/raincollector/status', 'GET', daemon_status),
-    Route('/station/{query}', 'GET', station_status),
+    Route('/daemon/start', 'POST', start_daemon),
+    Route('/daemon/status', 'GET', daemon_status),
+    Route('/stations/', 'GET', list_stations),
+    Route('/stations/{query}', 'GET', station_status),
     Include('/docs', docs_urls),
     Include('/static', static_urls)
 ]

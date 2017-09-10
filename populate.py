@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup, SoupStrainer
 from parsers.exceptions import RainParserError
 from station import RainStation
 
-# logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("collector")
 
 url = str
@@ -22,12 +22,12 @@ def spawn_station(url: str, stations):
     try:
         rs = RainStation.from_http_request(r)
     except RainParserError:
-        pass #TODO
+        print('Error')    # TODO:
     else:
         stations.append(rs)
 
 
-def fetch_links(quantity=3):
+def fetch_links(quantity=40):
     'Generates a list of station datasheet urls.'
     logger.info(f'Fetching {quantity} urls from {BASE_URL}')
     r = requests.get(BASE_URL)
